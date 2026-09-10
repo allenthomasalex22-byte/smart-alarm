@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hand Detector Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+</head>
+<body>
+  <video id="video" style="display:none;"></video>
+  <h1 id="status" style="font-size: 40px; text-align: center;">Waiting...</h1>
+
+  <script>
+    const videoElement = document.getElementById('video');
+    const statusEl = document.getElementById('status');
+
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.5
+    });
+
+    hands.onResults((results) => {
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        statusEl.innerText = "✋ Hand detected!";
+        statusEl.style.color = "red";
+      } else {
+        statusEl.innerText = "No hand";
+        statusEl.style.color = "black";
+      }
+    });
+
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await hands.send({ image: videoElement });
+      },
+      width: 320,
+      height: 240,
+      facingMode: "environment"
+    });
+    camera.start();
+  </script>
+</body>
+</html>
